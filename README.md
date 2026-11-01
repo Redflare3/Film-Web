@@ -3,7 +3,7 @@
 - **NIM:** (103022400141)
 - **Mata kuliah:** Pemrograman Web
 
-# 🎞️ FilmVault — Katalog Film 
+# FilmVault — Katalog Film 
 
 Aplikasi katalog film berbasis **React + Vite**. Project ini dikembangkan bertahap sepanjang semester sebagai kerangka aplikasi fullstack.
 
@@ -17,7 +17,7 @@ Aplikasi katalog film berbasis **React + Vite**. Project ini dikembangkan bertah
 
 | Tahap | Screenshot |
 |---|---|
-| `npm run dev` di `localhost:5173` | (![alt text](image.png)) |
+| `npm run dev` di `localhost:5173` | ![alt text](image.png) |
 
 
 
