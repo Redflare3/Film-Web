@@ -1,6 +1,6 @@
 
-- **Nama:** (Muhammad Zaki)
-- **NIM:** (103022400141)
+- **Nama:** Muhammad Zaki
+- **NIM:** 103022400141
 - **Mata kuliah:** Pemrograman Web
 
 # FilmVault — Katalog Film 
