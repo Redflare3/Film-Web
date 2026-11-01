@@ -25,6 +25,7 @@ function CariFilmAPI({ onTambah, judulTersimpan }) {
       setError(null)
 
       try {
+        
         const response = await fetch(
           `${API_URL}?q=${encodeURIComponent(kataCari)}`,
           { signal: controller.signal }

@@ -46,3 +46,16 @@ Aplikasi katalog film berbasis **React + Vite**. Project ini dikembangkan bertah
 | `Footer` | `namaApp` | Footer aplikasi |
 
 ---
+### Endpoint
+ 
+```
+GET https://api.tvmaze.com/search/shows?q={kata kunci}
+```
+---
+ | Kondisi | Screenshot |
+|---|---|
+| Loading | !![alt text](image-1.png) |
+| Success | !![alt text](image-2.png)|
+| Error + tombol "Coba Lagi" | !![alt text](image-3.png)|
+ 
+---
