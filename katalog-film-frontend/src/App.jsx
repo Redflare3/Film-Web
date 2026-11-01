@@ -4,6 +4,7 @@ import FormTambahFilm from './components/FormTambahFilm'
 import DaftarFilm from './components/DaftarFilm'
 import Footer from './components/Footer'
 import './App.css'
+import CariFilmAPI from './components/CariFilmAPI'
 
 function App() {
   const [daftarFilm, setDaftarFilm] = useState([
@@ -92,6 +93,11 @@ function App() {
     <main className="page">
       <FormTambahFilm onTambah={tambahFilm} />
 
+      <CariFilmAPI
+        onTambah={tambahFilm}
+        judulTersimpan={daftarFilm.map((f) => f.judul.toLowerCase())}
+      />
+      
       <section id="koleksi" className="koleksi">
         <h2 className="section-judul">Daftar Film</h2>
         <div className="toolbar">
