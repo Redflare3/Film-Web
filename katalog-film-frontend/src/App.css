@@ -205,3 +205,12 @@ input:focus, .select:focus { outline: 2px solid var(--primary); outline-offset: 
 .hasil-item__info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hasil-item__info small { color: var(--muted); }
 .tombol:disabled { opacity: 0.5; cursor: not-allowed; }
+.kartu__aksi { display: flex; gap: 8px; margin-top: 10px; }
+.kartu__aksi .tombol { flex: 1; padding: 6px 10px; font-size: 13px; }
+.tombol--hapus { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.tombol--hapus:hover { background: #fee2e2; }
+
+.pesan {
+  background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+  padding: 12px 16px; border-radius: var(--radius); margin-bottom: 16px;
+}

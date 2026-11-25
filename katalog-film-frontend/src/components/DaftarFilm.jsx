@@ -1,6 +1,6 @@
 import KartuFilm from './KartuFilm'
 
-function DaftarFilm({ daftarFilm, totalFilm }) {
+function DaftarFilm({ daftarFilm, totalFilm, onHapus, onUbahRating }) {
   if (totalFilm === 0) {
     return <p className="kosong">Belum ada data film</p>
   }
@@ -14,12 +14,15 @@ function DaftarFilm({ daftarFilm, totalFilm }) {
       {daftarFilm.map((film) => (
         <KartuFilm
           key={film.id}
+          id={film.id}
           judul={film.judul}
           tahun={film.tahun}
           genre={film.genre}
           sutradara={film.sutradara}
           rating={film.rating}
           cover={film.cover}
+          onHapus={onHapus}
+          onUbahRating={onUbahRating}
         />
       ))}
     </div>

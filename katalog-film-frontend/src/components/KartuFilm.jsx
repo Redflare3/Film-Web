@@ -1,6 +1,8 @@
 import Poster from './Poster'
 
-function KartuFilm({ judul, tahun, genre, sutradara, rating, cover }) {
+function KartuFilm({
+  id, judul, tahun, genre, sutradara, rating, cover, onHapus, onUbahRating,
+}) {
   return (
     <article className="kartu">
       <div className="kartu__poster">
@@ -11,6 +13,14 @@ function KartuFilm({ judul, tahun, genre, sutradara, rating, cover }) {
       <div className="kartu__bawah">
         <span className="meta">{tahun} · {genre}</span>
         <span className="rating">⭐ {rating.toFixed(1)}</span>
+      </div>
+      <div className="kartu__aksi">
+        <button className="tombol tombol--outline" onClick={() => onUbahRating(id, rating)}>
+          Ubah rating
+        </button>
+        <button className="tombol tombol--hapus" onClick={() => onHapus(id)}>
+          Hapus
+        </button>
       </div>
     </article>
   )

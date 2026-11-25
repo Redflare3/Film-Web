@@ -1,69 +1,112 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import FormTambahFilm from './components/FormTambahFilm'
+import CariFilmAPI from './components/CariFilmAPI'
 import DaftarFilm from './components/DaftarFilm'
 import Footer from './components/Footer'
 import './App.css'
-import CariFilmAPI from './components/CariFilmAPI'
+//Tempat CRUD nya
+const API_URL = 'http://localhost:3000/film'
+
+async function bacaError(res) {
+  try {
+    const body = await res.json()
+    return Array.isArray(body.message) ? body.message.join(', ') : body.message
+  } catch {
+    return `Server membalas status ${res.status}`
+  }
+}
 
 function App() {
-  const [daftarFilm, setDaftarFilm] = useState([
-    {
-      id: 1, judul: 'The Grand Budapest Hotel', tahun: 2014, genre: 'Komedi',
-      sutradara: 'Wes Anderson', rating: 8.1,
-      sinopsis: 'Seorang concierge hotel legendaris dan anak didiknya terseret kasus pencurian lukisan berharga di tengah dunia yang sedang berubah.',
-      cover: '/covers/grand-budapest-hotel.jpg',
-    },
-    {
-      id: 2, judul: 'Interstellar', tahun: 2014, genre: 'Sci-Fi',
-      sutradara: 'Christopher Nolan', rating: 8.7,
-      sinopsis: 'Sekelompok astronot melintasi lubang cacing untuk mencari planet baru bagi umat manusia yang bumi-nya mulai tak layak huni.',
-      cover: '/covers/interstellar.jpg',
-    },
-    {
-      id: 3, judul: 'Parasite', tahun: 2019, genre: 'Thriller',
-      sutradara: 'Bong Joon-ho', rating: 8.5,
-      sinopsis: 'Sebuah keluarga miskin perlahan menyusup ke kehidupan keluarga kaya, hingga rahasia di bawah rumah mereka terungkap.',
-      cover: '/covers/parasite.jpg',
-    },
-    {
-      id: 4, judul: 'Your Name', tahun: 2016, genre: 'Animasi',
-      sutradara: 'Makoto Shinkai', rating: 8.4,
-      sinopsis: 'Dua remaja yang tidak saling kenal tiba-tiba bertukar tubuh dan mulai mencari tahu hubungan di antara mereka.',
-      cover: '/covers/your-name.jpg',
-    },
-    {
-      id: 5, judul: 'The Raid', tahun: 2011, genre: 'Aksi',
-      sutradara: 'Gareth Evans', rating: 7.6,
-      sinopsis: 'Tim polisi terjebak di gedung apartemen yang dikuasai gembong kriminal dan harus bertarung naik lantai demi lantai.',
-      cover: '/covers/the-raid.jpg',
-    },
-    {
-      id: 6, judul: 'Whiplash', tahun: 2014, genre: 'Drama',
-      sutradara: 'Damien Chazelle', rating: 8.5,
-      sinopsis: 'Seorang drummer muda berambisi menjadi hebat di bawah bimbingan instruktur musik yang sangat keras.',
-      cover: '/covers/whiplash.jpg',
-    },
-    {
-      id: 7, judul: 'Arrival', tahun: 2016, genre: 'Sci-Fi',
-      sutradara: 'Denis Villeneuve', rating: 7.9,
-      sinopsis: 'Seorang ahli bahasa ditugaskan berkomunikasi dengan makhluk asing yang tiba-tiba mendarat di berbagai penjuru dunia.',
-      cover: '/covers/arrival.jpg',
-    },
-    {
-      id: 8, judul: 'Eternal Sunshine of the Spotless Mind', tahun: 2004, genre: 'Romansa',
-      sutradara: 'Michel Gondry', rating: 8.3,
-      sinopsis: 'Sepasang kekasih memilih menghapus kenangan satu sama lain, lalu menyadari apa yang sebenarnya ingin mereka simpan.',
-      cover: '/covers/eternal-sunshine.jpg',
-    },
-  ])
+  const [daftarFilm, setDaftarFilm] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [percobaan, setPercobaan] = useState(0)
+  const [pesan, setPesan] = useState(null)
 
   const [kataKunci, setKataKunci] = useState('')
   const [genreAktif, setGenreAktif] = useState('Semua')
   const [urutan, setUrutan] = useState('rating')
 
-  const tambahFilm = (filmBaru) => {
-    setDaftarFilm([...daftarFilm, { id: Date.now(), ...filmBaru }])
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function ambilFilm() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(API_URL, { signal: controller.signal })
+        if (!res.ok) throw new Error(`Server membalas status ${res.status}`)
+        setDaftarFilm(await res.json())
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        setError(
+          err.message === 'Failed to fetch'
+            ? 'Backend tidak dapat dihubungi. Pastikan server NestJS sudah berjalan.'
+            : err.message
+        )
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }
+
+    ambilFilm()
+    return () => controller.abort()
+  }, [percobaan])
+
+  const tambahFilm = async (filmBaru) => {
+    setPesan(null)
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(filmBaru),
+      })
+      if (!res.ok) throw new Error(await bacaError(res))
+      const tersimpan = await res.json()
+      setDaftarFilm((lama) => [...lama, tersimpan])
+    } catch (err) {
+      setPesan(`Gagal menambah film: ${err.message}`)
+    }
+  }
+
+  const ubahRating = async (id, ratingLama) => {
+    const input = window.prompt('Rating baru (0-10):', ratingLama)
+    if (input === null) return
+
+    const rating = Number(input)
+    if (input.trim() === '' || Number.isNaN(rating) || rating < 0 || rating > 10) {
+      setPesan('Rating harus berupa angka 0 sampai 10.')
+      return
+    }
+
+    setPesan(null)
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      })
+      if (!res.ok) throw new Error(await bacaError(res))
+      const diperbarui = await res.json()
+      setDaftarFilm((lama) => lama.map((f) => (f.id === id ? diperbarui : f)))
+    } catch (err) {
+      setPesan(`Gagal mengubah rating: ${err.message}`)
+    }
+  }
+
+
+  const hapusFilm = async (id) => {
+    if (!window.confirm('Hapus film ini dari koleksi?')) return
+
+    setPesan(null)
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(await bacaError(res))
+      setDaftarFilm((lama) => lama.filter((f) => f.id !== id))
+    } catch (err) {
+      setPesan(`Gagal menghapus film: ${err.message}`)
+    }
   }
 
   const daftarGenre = ['Semua', ...new Set(daftarFilm.map((f) => f.genre))]
@@ -81,50 +124,79 @@ function App() {
     })
 
   return (
-  <>
-    <Navbar
-      kataKunci={kataKunci}
-      onUbahKataKunci={setKataKunci}
-      daftarGenre={daftarGenre}
-      genreAktif={genreAktif}
-      onUbahGenre={setGenreAktif}
-    />
-
-    <main className="page">
-      <FormTambahFilm onTambah={tambahFilm} />
-
-      <CariFilmAPI
-        onTambah={tambahFilm}
-        judulTersimpan={daftarFilm.map((f) => f.judul.toLowerCase())}
+    <>
+      <Navbar
+        kataKunci={kataKunci}
+        onUbahKataKunci={setKataKunci}
+        daftarGenre={daftarGenre}
+        genreAktif={genreAktif}
+        onUbahGenre={setGenreAktif}
       />
-      
-      <section id="koleksi" className="koleksi">
-        <h2 className="section-judul">Daftar Film</h2>
-        <div className="toolbar">
-          <span>
-            <strong>{filmTampil.length} film</strong> ditampilkan
-          </span>
-          <label className="toolbar__urut">
-            Urutkan
-            <select
-              className="select"
-              value={urutan}
-              onChange={(e) => setUrutan(e.target.value)}
-            >
-              <option value="rating">Rating tertinggi</option>
-              <option value="tahun">Tahun terbaru</option>
-              <option value="judul">Judul A-Z</option>
-            </select>
-          </label>
-        </div>
 
-        <DaftarFilm daftarFilm={filmTampil} totalFilm={daftarFilm.length} />
-      </section>
-    </main>
+      <main className="page">
+        <FormTambahFilm onTambah={tambahFilm} />
 
-    <Footer namaApp="FilmVault" />
-  </>
-)
+        <CariFilmAPI
+          onTambah={tambahFilm}
+          judulTersimpan={daftarFilm.map((f) => f.judul.toLowerCase())}
+        />
+
+        <section id="koleksi" className="koleksi">
+          <h2 className="section-judul">Daftar Film</h2>
+
+          {pesan && <div className="pesan">{pesan}</div>}
+
+          <div className="toolbar">
+            <span>
+              <strong>{filmTampil.length} film</strong> ditampilkan
+            </span>
+            <label className="toolbar__urut">
+              Urutkan
+              <select
+                className="select"
+                value={urutan}
+                onChange={(e) => setUrutan(e.target.value)}
+              >
+                <option value="rating">Rating tertinggi</option>
+                <option value="tahun">Tahun terbaru</option>
+                <option value="judul">Judul A-Z</option>
+              </select>
+            </label>
+          </div>
+
+          {loading && (
+            <div className="status status--loading">
+              <span className="spinner" />
+              Memuat data dari database...
+            </div>
+          )}
+
+          {error && (
+            <div className="status status--error">
+              <p> Gagal mengambil data: {error}</p>
+              <button
+                className="tombol tombol--outline"
+                onClick={() => setPercobaan((p) => p + 1)}
+              >
+                Coba Lagi
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <DaftarFilm
+              daftarFilm={filmTampil}
+              totalFilm={daftarFilm.length}
+              onHapus={hapusFilm}
+              onUbahRating={ubahRating}
+            />
+          )}
+        </section>
+      </main>
+
+      <Footer namaApp="FilmVault" />
+    </>
+  )
 }
 
 export default App
